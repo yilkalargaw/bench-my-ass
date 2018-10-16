@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  go-server:
+    image: golang                     # golang Official Repository
+    working_dir: /root
+    command: go run index.go
+    networks: [net]
+    volumes: ['.:/root']
+
+  php-server:
+    image: koolob/swoole-docker       # swoole php Repository
+    working_dir: /root
+    command: php index.php
+    networks: [net]
+    volumes: ['.:/root']
+
+  node-server:
+    image: node                       # node js Official Repository
+    working_dir: /root
+    command: node index.js
+    networks: [net]
+    volumes: ['.:/root']
+
+  benchmark-client:
+    image: williamyeh/wrk           # A minimal wrk image: Modern HTTP benchmarking tool
+    networks: [net]
+    depends_on:
+      - go-server
+      - node-server
+      - php-server
+    entrypoint: >
+        sh -c '
+          sleep 3 &&
+
+          wrk -t12 -c400 -d30s http://go-server:8081 &&
+          wrk -t12 -c400 -d30s http://node-server:8082 &&
+          wrk -t12 -c400 -d30s http://php-server:8083 &&
+
+          echo "" &&
+          echo "" &&
+          echo "Look at a line starting with \"Requests/sec:\"" &&
+          echo "You can stop it now ..."
+        '
+
+networks:
+  net:
+    driver: bridge
