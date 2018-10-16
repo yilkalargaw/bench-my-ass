@@ -1,0 +1,9 @@
+*
+
+!/.gitignore
+!/docker-compose.yml
+!/index.go
+!/index.js
+!/index.php
+!/LICENSE
+!/README.md
